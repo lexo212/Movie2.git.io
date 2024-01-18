@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies List</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <p>MOVIES LIST</p>
+        <form id="form">
+            <input type="text" autocomplete="off" id="search" placeholder="Search" class="search"> 
+            <button id="searchBtn">Search</button>
+        </form>
+    </header>
+    <main id="main"></main>
+
+    <script src="app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;600&display=swap');
+    
+    *{
+        box-sizing: border-box;
+        
+    }
+    
+    body{
+        margin: 0;
+        background-color: rgb(255, 255, 255);
+         font-family: "Poppins", sans-serif;
+    }
+    
+    header{
+        background-color: rgb(8, 17, 148);
+        padding: 1rem;
+     
+        justify-content: flex-end;
+    }
+    
+    
+    .search {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    border: 2px solid #ffffff;
+    background-color: transparent;
+    font-family: inherit;
+    color: #eee;
+    font-size: 1rem;
+    
+    }
+    .search1 {
+        border-radius: 50px;
+        font-size: 1rem;
+    }
+    
+    .search::placeholder{
+        color: #f8f8f8;
+    }
+    
+    .search:focus{
+        outline: none;
+        background-color: #3742a5;
+    }
+    
+    
+    main{
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    
+    .movie{
+        box-shadow: 0 4px 5px rgb(5, 2, 182);
+        border-radius: 3px;
+        width: 300px;
+        background-color: rgba(169, 169, 169, 0.295);
+        margin: 1rem;
+        overflow: hidden;
+        position: relative;
+    
+    }
+    
+    .movie img{
+     width: 100%;
+       
+    }
+    
+    .movie-info{
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 1rem 1rem;
+        color: black;
+        letter-spacing: 0.5px;
+        align-items: center;
+    }
+    
+    .movie-info h3{
+        margin: 0;
+    }
+    
+    .movie-info span{
+        background-color: #0a15af;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    
+    
+    .movie-info span.orange{
+     color: rgb(255, 255, 255);
+    }
+    
+    
+    .overview{
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        background-color: rgb(63, 78, 143);
+        opacity: 0.8;
+        padding: 2rem;
+        transform: translateY(100%);
+        transition: transform 1s ease-in;
+        max-width: 100%;
+        overflow: auto;
+        color: rgb(165, 166, 235);
+        
+    }
+    
+    .movie:hover .overview{
+        transform: translateY(0);
+    
+    }
+    
+    .overview h4{
+        margin-top: 0;
+    }
+    </style>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const movies = document.querySelectorAll(".movie");
+
+        movies.forEach((movie) => {
+            movie.addEventListener("click", () => {
+                toggleOverview(movie);
+            });
+        });
+    });
+
+    function toggleOverview(movie) {
+        const overview = movie.querySelector(".overview");
+        const isHidden = overview.style.transform === "translateY(100%)";
+
+        if (isHidden) {
+            overview.style.transform = "translateY(0)";
+        } else {
+            overview.style.transform = "translateY(100%)";
+        }
+    }
+
+    const APIURL = "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=04c35731a5ee918f014970082a0088b1&page=1";
+    const IMGPATH = "https://image.tmdb.org/t/p/w1280";
+    const SEARCHAPI = "https://api.themoviedb.org/3/search/movie?&api_key=04c35731a5ee918f014970082a0088b1&query=";
+
+    const main = document.getElementById("main");
+    const form = document.getElementById("form");
+    const search = document.getElementById("search");
+
+    getMovies(APIURL);
+
+    async function getMovies(url) {
+        const resp = await fetch(url);
+        const respData = await resp.json();
+        showMovies(respData.results);
+    }
+
+    function showMovies(movies) {
+        main.innerHTML = "";
+        movies.forEach((movie) => {
+            const { poster_path, title, vote_average, overview } = movie;
+            const movieEl = document.createElement("div");
+            movieEl.classList.add("movie");
+
+            movieEl.innerHTML = `
+                <img src="${IMGPATH + poster_path}" alt="${title}"/>
+                <div class="movie-info">
+                    <h3>${title}</h3>
+                    <span class="${getClassByRate(vote_average)}">${vote_average}</span>
+                </div> 
+                <div class="overview">
+                    <h2>Overview:</h2>
+                    ${overview}
+                </div>
+            `;
+
+            main.appendChild(movieEl);
+        });
+    }
+
+    function getClassByRate(vote) {
+        if (vote >= 8) {
+            return 'green';
+        } else if (vote >= 5) {
+            return 'orange';
+        } else {
+            return 'red';
+        }
+    }
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const searchTerm = search.value;
+        if (searchTerm) {
+            getMovies(SEARCHAPI + searchTerm);
+            search.value = "";
+        }
+    });
+    </script>
+</body>
+</html>
